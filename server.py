@@ -24,7 +24,8 @@ def create_response(message):
     :return:
     """
     if ('action' in message and message['action'] == 'presence'
-            and 'time' in message and 'user' in message):
+            and 'time' in message and 'user' in message
+            and isinstance(message['user'], dict)):
         return {
             'response': 200,
             'time': time(),

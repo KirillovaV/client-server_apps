@@ -12,6 +12,8 @@ def send_message(socket_obj, message):
     :param socket_obj: объект сокета для обмена сообщениями
     :param message: словарь с атрибутами сообщения
     """
+    if not isinstance(message, dict):
+        raise TypeError
     msg = json.dumps(message)
     socket_obj.send(msg.encode(ENCODING))
 
