@@ -20,11 +20,12 @@ def create_response(message):
     """
     Функция проверяет поля сообщения на соответствие JIM-формату
     и формирует ответное сообщение с кодом ответа.
-    :param message:
-    :return:
+    :param message: сообщение в виде словаря
+    :return: ответ в виде словаря
     """
     if ('action' in message and message['action'] == 'presence'
-            and 'time' in message and 'user' in message):
+            and 'time' in message and 'user' in message
+            and isinstance(message['user'], dict)):
         return {
             'response': 200,
             'time': time(),
@@ -32,7 +33,7 @@ def create_response(message):
         }
     return {
         'response': 400,
-        "time": time(),
+        'time': time(),
         'error': 'Ошибка соединения'
     }
 
