@@ -6,25 +6,10 @@ import json
 import unittest
 import os
 import sys
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 sys.path.append(os.path.join(os.getcwd(), '..'))
-from common.variables import MAX_PACKAGE_LENGTH, ENCODING
+from common.variables import *
 from common.utils import get_message, send_message
-
-
-class TestSocket:
-    def __init__(self, test_dict):
-        self.test_dict = test_dict
-        self.encoded_message = None
-        self.received_message = None
-
-    def send(self, message_to_send):
-        json_test_message = json.dumps(self.test_dict)
-        self.encoded_message = json_test_message.encode(ENCODING)
-        self.received_message = message_to_send
-
-    def recv(self, max_len):
-        json_test_message = json.dumps(self.test_dict)
-        return json_test_message.encode(ENCODING)
 
 
 class TestUtils(unittest.TestCase):
@@ -48,25 +33,95 @@ class TestUtils(unittest.TestCase):
         'error': 'Ошибка соединения'
     }
 
+    # инициализируем тестовые сокеты для клиента и для сервера
+    server_socket = None
+    client_socket = None
+
     def setUp(self) -> None:
-        pass
+        # Создаем тестовый сокет для сервера
+        self.server_socket = socket(AF_INET, SOCK_STREAM)
+        self.server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.server_socket.bind((DEFAULT_LISTEN_ADDRESSES, DEFAULT_PORT))
+        self.server_socket.listen(MAX_USERS)
+        # Создаем тестовый сокет для клиента
+        self.client_socket = socket(AF_INET, SOCK_STREAM)
+        self.client_socket.connect((DEFAULT_IP, DEFAULT_PORT))
 
     def tearDown(self) -> None:
-        pass
+        # Закрываем созданные сокеты
+        self.client_socket.close()
+        self.server_socket.close()
 
-    def test_send_message(self):
-        test_socket = TestSocket(self.test_message)
-        send_message(test_socket, self.test_message)
-        self.assertEqual(test_socket.encoded_message, test_socket.received_message)
-        self.assertRaises(TypeError, send_message, test_socket, 'wrong dict')
+    def test_send_wrong_message_from_client(self):
+        """
+        Проверяем исключение, если на входе не словарь
+        """
+        self.assertRaises(TypeError, send_message, self.client_socket, 'not dict')
 
-    def test_get_message(self):
-        test_sock_ok = TestSocket(self.test_correct_response)
-        test_sock_err = TestSocket(self.test_error_response)
-        # Корректная расшифровка корректного словаря
-        self.assertEqual(get_message(test_sock_ok), self.test_correct_response)
-        # Корректная расшифровка ошибочного словаря
-        self.assertEqual(get_message(test_sock_err), self.test_error_response)
+    def test_send_message_client_server(self):
+        """
+        Проверяем отправку корректного сообщения
+        """
+        client, client_address = self.server_socket.accept()
+        # Отправляем сообщение
+        send_message(self.client_socket, self.test_message)
+        # Получаем и раскодируем сообщение
+        test_response = client.recv(MAX_PACKAGE_LENGTH)
+        test_response = json.loads(test_response.decode(ENCODING))
+        client.close()
+        # Проверяем соответствие изначального сообщения и прошедшего отправку
+        self.assertEqual(self.test_message, test_response)
+
+    def test_get_message_200(self):
+        """
+        Корректрая расшифровка коректного словаря
+        """
+        # Отправляем клиенту тестовый ответ о корректной отправке данных
+        client, client_address = self.server_socket.accept()
+        message = json.dumps(self.test_correct_response)
+        client.send(message.encode(ENCODING))
+        client.close()
+        # получаем ответ
+        response = get_message(self.client_socket)
+        # сравниваем отправленный и полученный ответ
+        self.assertEqual(self.test_correct_response, response)
+
+    def test_get_message_400(self):
+        """
+        Корректрая расшифровка ошибочного словаря
+        """
+        # Отправляем клиенту тестовый ответ об ошибке
+        client, client_address = self.server_socket.accept()
+        message = json.dumps(self.test_error_response)
+        client.send(message.encode(ENCODING))
+        client.close()
+        # получаем ответ
+        response = get_message(self.client_socket)
+        # сравниваем отправленный и полученный ответ
+        self.assertEqual(self.test_error_response, response)
+
+    def test_get_message_not_dict(self):
+        """
+        Проверяем возникновение ошибки, если пришедший объект не словарь
+        """
+        client, client_address = self.server_socket.accept()
+        # Отправляем клиенту строку, вместо словаря
+        message = json.dumps('not dict')
+        client.send(message.encode(ENCODING))
+        client.close()
+
+        self.assertRaises(ValueError, get_message, self.client_socket)
+
+    def test_get_message_dict(self):
+        """
+        Проверяет является ли возвращаемый объект словарем
+        """
+        client, client_address = self.server_socket.accept()
+        message = json.dumps(self.test_correct_response)
+        client.send(message.encode(ENCODING))
+        client.close()
+
+        self.assertIsInstance(get_message(self.client_socket), dict)
 
 
 if __name__ == '__main__':
