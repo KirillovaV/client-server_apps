@@ -3,6 +3,7 @@
 """
 import json
 from common.variables import MAX_PACKAGE_LENGTH, ENCODING
+from errors import NotDictError
 
 
 def send_message(socket_obj, message):
@@ -13,7 +14,7 @@ def send_message(socket_obj, message):
     :param message: словарь с атрибутами сообщения
     """
     if not isinstance(message, dict):
-        raise TypeError
+        raise NotDictError
     msg = json.dumps(message)
     socket_obj.send(msg.encode(ENCODING))
 
@@ -31,5 +32,5 @@ def get_message(socket_obj):
         # Проверяем результат декодирования
         if isinstance(response, dict):
             return response
-        raise ValueError
+        raise NotDictError
     raise ValueError
