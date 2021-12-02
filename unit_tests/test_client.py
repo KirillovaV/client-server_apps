@@ -6,7 +6,8 @@ import os
 import sys
 import unittest
 sys.path.append(os.path.join(os.getcwd(), '..'))
-from client import create_message, read_response
+from client import create_presence_message, read_response
+from errors import MissingFieldError
 
 
 class TestClient(unittest.TestCase):
@@ -29,7 +30,7 @@ class TestClient(unittest.TestCase):
 
     def test_create_message_ok(self):
         """Формирование стандартного сообщения"""
-        test_msg = create_message()
+        test_msg = create_presence_message()
         test_msg['time'] = 1
 
         self.assertEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
@@ -40,7 +41,7 @@ class TestClient(unittest.TestCase):
         Формирование сообщения с другими параметрами пользователя
         Верный результ
         """
-        test_msg = create_message(user='Test', password='Test')
+        test_msg = create_presence_message(user='Test', password='Test')
         test_msg['time'] = 1
 
         self.assertEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
@@ -51,7 +52,7 @@ class TestClient(unittest.TestCase):
         Формирование сообщения с другими параметрами пользователя
         Неверный результат
         """
-        test_msg = create_message(user='Test', password='Test')
+        test_msg = create_presence_message(user='Test', password='Test')
         test_msg['time'] = 1
 
         self.assertNotEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
@@ -61,7 +62,7 @@ class TestClient(unittest.TestCase):
         """
         Проверяет, является ли возвращенный объект словарем
         """
-        test_msg = create_message()
+        test_msg = create_presence_message()
         self.assertIsInstance(test_msg, dict)
 
     def test_read_response_200(self):
@@ -76,7 +77,7 @@ class TestClient(unittest.TestCase):
 
     def test_no_response_1(self):
         """Некорректный ответ сервера"""
-        self.assertRaises(ValueError, read_response, {'time': 1, 'error': 'Ошибка соединения'})
+        self.assertRaises(MissingFieldError, read_response, {'time': 1, 'error': 'Ошибка соединения'})
 
     def test_no_response_2(self):
         """Некорректный код ответа"""

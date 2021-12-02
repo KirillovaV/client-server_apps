@@ -10,6 +10,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 sys.path.append(os.path.join(os.getcwd(), '..'))
 from common.variables import *
 from common.utils import get_message, send_message
+from errors import NotDictError
 
 
 class TestUtils(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestUtils(unittest.TestCase):
         """
         Проверяем исключение, если на входе не словарь
         """
-        self.assertRaises(TypeError, send_message, self.client_socket, 'not dict')
+        self.assertRaises(NotDictError, send_message, self.client_socket, 'not dict')
 
     def test_send_message_client_server(self):
         """
@@ -110,7 +111,7 @@ class TestUtils(unittest.TestCase):
         client.send(message.encode(ENCODING))
         client.close()
 
-        self.assertRaises(ValueError, get_message, self.client_socket)
+        self.assertRaises(NotDictError, get_message, self.client_socket)
 
     def test_get_message_dict(self):
         """
