@@ -16,11 +16,13 @@ from sys import argv
 from socket import socket, AF_INET, SOCK_STREAM
 from common.utils import send_message, get_message
 from common.variables import DEFAULT_PORT, DEFAULT_IP
+from decos import Log
 from errors import NotDictError, MissingFieldError
 
 client_log = logging.getLogger('client')
 
 
+@Log()
 def create_presence_message(user='User', password=''):
     """
     Функция формирует presence-сообщение
@@ -41,6 +43,7 @@ def create_presence_message(user='User', password=''):
     return message
 
 
+@Log()
 def read_response(message):
     """
     Функция принимает ответ сервера и выводит на экран

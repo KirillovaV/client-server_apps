@@ -3,9 +3,11 @@
 """
 import json
 from common.variables import MAX_PACKAGE_LENGTH, ENCODING
+from decos import Log
 from errors import NotDictError
 
 
+@Log()
 def send_message(socket_obj, message):
     """
     Функция, осуществляющая кодирование и отправку сообщений между
@@ -19,6 +21,7 @@ def send_message(socket_obj, message):
     socket_obj.send(msg.encode(ENCODING))
 
 
+@Log()
 def get_message(socket_obj):
     """
     Функция принимает и декодирует сообщение
