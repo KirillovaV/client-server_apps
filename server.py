@@ -16,11 +16,13 @@ import log.server_log_config
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from common.utils import send_message, get_message
 from common.variables import DEFAULT_PORT, DEFAULT_LISTEN_ADDRESSES, MAX_USERS
+from decos import Log
 from errors import NotDictError
 
 server_log = logging.getLogger('server')
 
 
+@Log()
 def create_response(message):
     """
     Функция проверяет поля сообщения на соответствие JIM-формату
