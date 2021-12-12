@@ -9,7 +9,7 @@
 addr — ip-адрес сервера; port — tcp-порт на сервере, по умолчанию 7777.
 
 
-Модуль по умолчанию работает на отправку сообщений
+Модуль по умолчанию работает на приём сообщений
 """
 import argparse
 import json
@@ -110,7 +110,7 @@ def get_user_settings():
     args = argparse.ArgumentParser()
     args.add_argument('address', default=DEFAULT_IP, nargs='?')
     args.add_argument('port', type=int, default=DEFAULT_PORT, nargs='?')
-    args.add_argument('-m', '--mode', default='send', nargs='?')
+    args.add_argument('-m', '--mode', default='read', nargs='?')
     namespace = args.parse_args(argv[1:])
     connection_ip = namespace.address
     connection_port = namespace.port
@@ -170,7 +170,7 @@ def run_client():
         client_log.info(f'Клиент запущен в режиме отпраки сообщений.')
         print(f'Клиент запущен в режиме отпраки сообщений.')
         while True:
-            msg = input('Введите сообщение для отправки или "exit" для выхода:\n')
+            msg = input('Введите сообщение для отправки или "exit" для выхода: ')
             message = create_user_message(msg)
             send_message(client_socket, message)
             client_log.info(f'Отрправлено сообщение {message}')
@@ -184,6 +184,7 @@ def run_client():
         while True:
             answer = read_user_message(get_message(client_socket))
             client_log.info(f'Получено сообщение {answer}')
+
 
     # Закрываем сокет
     client_socket.close()
