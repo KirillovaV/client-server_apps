@@ -17,7 +17,7 @@ import logging
 import log.server_log_config
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from common.utils import send_message, get_message
-from common.variables import DEFAULT_PORT, DEFAULT_LISTEN_ADDRESSES, MAX_USERS, TIMEOUT
+from common.variables import *
 from decos import Log
 from errors import NotDictError
 
@@ -25,11 +25,12 @@ server_log = logging.getLogger('server')
 
 
 @Log()
-def create_response(message, client, message_list):
+def create_response(message, client, message_list, client_list):
     """
     Функция проверяет поля сообщения на соответствие JIM-формату
     и отправляет сообщение с кодом ответа,
     либо записывает полученное сообщение в очередь на отправку.
+    :param client_list:
     :param message_list: список принятых сообщений
     :param client: сокет пользователя
     :param message: сообщение в виде словаря
@@ -37,32 +38,38 @@ def create_response(message, client, message_list):
     """
     server_log.debug(f'Формирование ответа на сообщение {message}')
     # Если получено presence-сообщение, сообщаем об успешном подключении
-    if ('action' in message and message['action'] == 'presence'
-            and 'time' in message and 'user' in message
-            and isinstance(message['user'], dict)):
+    if (ACTION in message and message[ACTION] == PRESENCE
+            and TIME in message and USER in message
+            and isinstance(message[USER], dict)):
         server_log.info(f'Принято presence-сообщение {message} '
-                        f'от: {message["user"]["account_name"]}')
+                        f'от: {message[USER]["account_name"]}')
         response = {
-            'response': 200,
-            'time': time(),
-            'alert': 'Соединение прошло успешно'
+            RESPONSE: 200,
+            TIME: time(),
+            ALERT: 'Соединение прошло успешно'
         }
         server_log.info(f'Сформировано сообщение об успешном соединении с {client}')
         send_message(client, response)
         return
 
     # Если получено текстовое сообщение, добавляем его в список на отправку
-    if ('action' in message and message['action'] == 'msg'
-            and 'time' in message and 'from' in message
-            and 'message' in message):
-        server_log.info(f'Принято сообщение {message} от: {message["from"]}')
-        message_list.append((message['from'], message['message'], message['time']))
+    if (ACTION in message and message[ACTION] == MSG
+            and TIME in message and FROM in message
+            and TO in message and TEXT in message):
+        server_log.info(f'Принято сообщение {message} от: {message[FROM]}')
+        message_list.append(message)
+        return
+
+    if ACTION in message and message[ACTION] == EXIT:
+        server_log.info(f'Клиент {client} отключился от сервера.')
+        client.close()
+        client_list.remove(client)
         return
 
     response = {
-        'response': 400,
-        'time': time(),
-        'error': 'Ошибка соединения'
+        RESPONSE: 400,
+        TIME: time(),
+        ERROR: 'Ошибка соединения'
     }
     server_log.info(f'Сформировано сообщение об ошибке для клиента {client}')
     send_message(client, response)
@@ -137,7 +144,7 @@ def run_server():
             for sending_client in read_lst:
                 try:
                     incoming_message = get_message(sending_client)
-                    create_response(incoming_message, sending_client, messages)
+                    create_response(incoming_message, sending_client, messages, clients)
 
                 except json.JSONDecodeError:
                     server_log.error(f'Не удалось декодировать сообщение клиента.')
@@ -152,12 +159,7 @@ def run_server():
 
         # Отправляем полученные сообщения клиентам
         if messages and write_lst:
-            message = {
-                'action': 'msg',
-                'from': messages[0][0],
-                'time': messages[0][2],
-                'message': messages[0][1]
-            }
+            message = messages[0]
             del messages[0]
             for waiting_client in write_lst:
                 try:
