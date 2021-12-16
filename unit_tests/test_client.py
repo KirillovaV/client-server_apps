@@ -8,18 +8,19 @@ import unittest
 sys.path.append(os.path.join(os.getcwd(), '..'))
 from client import create_presence_message, read_response
 from errors import MissingFieldError
+from common.variables import *
 
 
 class TestClient(unittest.TestCase):
     correct_response = {
-        'response': 200,
-        'time': 1,
-        'alert': 'Соединение прошло успешно'
+        RESPONSE: 200,
+        TIME: 1,
+        ALERT: 'Соединение прошло успешно'
     }
     error_response = {
-        'response': 400,
-        'time': 1,
-        'error': 'Ошибка соединения'
+        RESPONSE: 400,
+        TIME: 1,
+        ERROR: 'Ошибка соединения'
     }
 
     def setUp(self) -> None:
@@ -30,11 +31,11 @@ class TestClient(unittest.TestCase):
 
     def test_create_message_ok(self):
         """Формирование стандартного сообщения"""
-        test_msg = create_presence_message()
-        test_msg['time'] = 1
+        test_msg = create_presence_message(user='User')
+        test_msg[TIME] = 1
 
-        self.assertEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
-                                    'user': {'account_name': 'User', 'password': ''}})
+        self.assertEqual(test_msg, {ACTION: 'presence', TIME: 1, TYPE: 'status',
+                                    USER: {'account_name': 'User', 'password': ''}})
 
     def test_create_message_another_user_ok(self):
         """
@@ -42,10 +43,10 @@ class TestClient(unittest.TestCase):
         Верный результ
         """
         test_msg = create_presence_message(user='Test', password='Test')
-        test_msg['time'] = 1
+        test_msg[TIME] = 1
 
-        self.assertEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
-                                    'user': {'account_name': 'Test', 'password': 'Test'}})
+        self.assertEqual(test_msg, {ACTION: PRESENCE, TIME: 1, TYPE: 'status',
+                                    USER: {'account_name': 'Test', 'password': 'Test'}})
 
     def test_create_message_another_user_error(self):
         """
@@ -53,16 +54,16 @@ class TestClient(unittest.TestCase):
         Неверный результат
         """
         test_msg = create_presence_message(user='Test', password='Test')
-        test_msg['time'] = 1
+        test_msg[TIME] = 1
 
-        self.assertNotEqual(test_msg, {'action': 'presence', 'time': 1, 'type': 'status',
-                                       'user': {'account_name': 'User', 'password': ''}})
+        self.assertNotEqual(test_msg, {ACTION: PRESENCE, TIME: 1, TYPE: 'status',
+                                       USER: {'account_name': 'User', 'password': ''}})
 
     def test_create_message_is_dict(self):
         """
         Проверяет, является ли возвращенный объект словарем
         """
-        test_msg = create_presence_message()
+        test_msg = create_presence_message(user='test')
         self.assertIsInstance(test_msg, dict)
 
     def test_read_response_200(self):
@@ -77,11 +78,11 @@ class TestClient(unittest.TestCase):
 
     def test_no_response_1(self):
         """Некорректный ответ сервера"""
-        self.assertRaises(MissingFieldError, read_response, {'time': 1, 'error': 'Ошибка соединения'})
+        self.assertRaises(MissingFieldError, read_response, {TIME: 1, ERROR: 'Ошибка соединения'})
 
     def test_no_response_2(self):
         """Некорректный код ответа"""
-        self.assertRaises(ValueError, read_response, {'response': 300})
+        self.assertRaises(ValueError, read_response, {RESPONSE: 300})
 
 
 if __name__ == '__main__':

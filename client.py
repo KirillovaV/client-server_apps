@@ -1,15 +1,7 @@
 """
 Клиентская часть:
-Функции клиента:
-сформировать presence-сообщение;
-отправить сообщение серверу; - реализовано в utils.py
-получить ответ сервера; - реализовано в utils.py
-разобрать сообщение сервера;
 параметры командной строки скрипта client.py <addr> [<port>]:
 addr — ip-адрес сервера; port — tcp-порт на сервере, по умолчанию 7777.
-
-
-Модуль по умолчанию работает на отправку сообщений
 """
 import argparse
 import json
@@ -123,14 +115,15 @@ def read_response(message):
 @Log()
 def get_client_settings():
     """
-    Получает порт и ip-адрес сервера из аргументов командной строки
-    или назначает по умолчанию
+    Получает имя пользователя, порт и ip-адрес сервера
+    из аргументов командной строки или назначает по умолчанию
     :return:
     """
-    args = argparse.ArgumentParser()
-    args.add_argument('address', default=DEFAULT_IP, nargs='?')
-    args.add_argument('port', type=int, default=DEFAULT_PORT, nargs='?')
-    args.add_argument('-n', '--name', default=None, nargs='?')
+    args = argparse.ArgumentParser(description='Параметры для подключения к серверу')
+    args.add_argument('address', default=DEFAULT_IP, nargs='?', help='IP-адрес сервера')
+    args.add_argument('port', type=int, default=DEFAULT_PORT, nargs='?',
+                      help='Порт для подкючения к серверу, должен находиться в диапазоне от 1024 до 65535.')
+    args.add_argument('-n', '--name', default=None, help='Имя пользователя')
     namespace = args.parse_args(argv[1:])
     connection_ip = namespace.address
     connection_port = namespace.port
@@ -146,15 +139,24 @@ def get_client_settings():
 
 @Log()
 def print_help(user_name):
+    """
+    Выводит имя текущего пользователя и подсказку по доступным командам
+    :param user_name:
+    :return:
+    """
     print(f'Вы работаете как {user_name}')
-    print('Доступные команды:\n'
-          'm/message - отправить сообщение\n'
-          'h/help - вывод справки\n'
-          'q/quit - выход\n')
+    print('Доступные команды:\nm/message - отправить сообщение\n'
+          'h/help - вывод справки\nq/quit - выход\n')
 
 
 @Log()
 def get_command(client_socket, user_name):
+    """
+    Функция реализует интерфейс взаимодействия с пользователем.
+    :param client_socket:
+    :param user_name:
+    :return:
+    """
     while True:
         command = input('Введите команду:\n')
 

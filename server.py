@@ -1,12 +1,8 @@
 """
 Серверная часть.
-Функции сервера:
-принимает сообщение клиента; - реализовано в utils.py
-формирует ответ клиенту;
-отправляет ответ клиенту; - реализовано в utils.py
-имеет параметры командной строки:
-    -p <port> — TCP-порт для работы (по умолчанию использует 7777);
-    -a <addr> — IP-адрес для прослушивания (по умолчанию слушает все доступные адреса).
+Параметры командной строки:
+-p <port> — TCP-порт для работы (по умолчанию использует 7777);
+-a <addr> — IP-адрес для прослушивания (по умолчанию слушает все доступные адреса).
 """
 import argparse
 import json
@@ -84,8 +80,10 @@ def get_server_settings():
     """
     server_log.info(f'Получение IP-фдреса и порта для работы.')
     args = argparse.ArgumentParser()
-    args.add_argument('-a', default=DEFAULT_LISTEN_ADDRESSES, nargs='?')
-    args.add_argument('-p', type=int, default=DEFAULT_PORT, nargs='?')
+    args.add_argument('-a', default=DEFAULT_LISTEN_ADDRESSES, nargs='?',
+                      help='Прослушиваемый IP-адрес, по умолчанию слушает все адреса.')
+    args.add_argument('-p', type=int, default=DEFAULT_PORT, nargs='?',
+                      help='Номер порта, должен находиться в диапазоне от 1024 до 65535.')
     namespace = args.parse_args(argv[1:])
     listen_address = namespace.a
     listen_port = namespace.p
