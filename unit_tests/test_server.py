@@ -8,18 +8,19 @@ import sys
 from time import time
 sys.path.append(os.path.join(os.getcwd(), '..'))
 from server import create_response
+from common.variables import *
 
 
 class TestServer(unittest.TestCase):
     correct_response = {
-        'response': 200,
-        'time': 1,
-        'alert': 'Соединение прошло успешно'
+        RESPONSE: 200,
+        TIME: 1,
+        ALERT: 'Соединение прошло успешно'
     }
     error_response = {
-        'response': 400,
-        'time': 1,
-        'error': 'Ошибка соединения'
+        RESPONSE: 400,
+        TIME: 1,
+        ERROR: 'Ошибка соединения'
     }
 
     def setUp(self) -> None:
@@ -33,15 +34,15 @@ class TestServer(unittest.TestCase):
         Ответ на корректный запрос
         """
         test_response = create_response({
-            'action': 'presence',
-            'time': time(),
-            'type': 'status',
-            'user': {
+            ACTION: PRESENCE,
+            TIME: time(),
+            TYPE: 'status',
+            USER: {
                 'account_name': 'User',
                 'password': ''
             }
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertEqual(test_response, self.correct_response)
 
     def test_create_response_action_error(self):
@@ -49,15 +50,15 @@ class TestServer(unittest.TestCase):
         Некорректное действие
         """
         test_response = create_response({
-            'action': 'wrong_action',
-            'time': time(),
-            'type': 'status',
-            'user': {
+            ACTION: 'wrong_action',
+            TIME: time(),
+            TYPE: 'status',
+            USER: {
                 'account_name': 'User',
                 'password': ''
             }
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertEqual(test_response, self.error_response)
 
     def test_create_response_no_action(self):
@@ -65,14 +66,14 @@ class TestServer(unittest.TestCase):
         Отсутствие действия
         """
         test_response = create_response({
-            'time': time(),
-            'type': 'status',
-            'user': {
+            TIME: time(),
+            TYPE: 'status',
+            USER: {
                 'account_name': 'User',
                 'password': ''
             }
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertEqual(test_response, self.error_response)
 
     def test_create_response_no_time(self):
@@ -80,14 +81,13 @@ class TestServer(unittest.TestCase):
         Отсутствие временного штампа
         """
         test_response = create_response({
-            'action': 'presence',
-            'type': 'status',
-            'user': {
+            ACTION: PRESENCE,
+            TYPE: 'status',
+            USER: {
                 'account_name': 'User',
                 'password': ''
             }
         })
-        test_response['time'] = 1
         self.assertEqual(test_response, self.error_response)
 
     def test_create_response_no_user(self):
@@ -95,11 +95,11 @@ class TestServer(unittest.TestCase):
         Нет пользователя
         """
         test_response = create_response({
-            'action': 'presence',
-            'time': time(),
-            'type': 'status',
+            ACTION: PRESENCE,
+            TIME: time(),
+            TYPE: 'status',
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertEqual(test_response, self.error_response)
 
     def test_create_response_user_error(self):
@@ -107,12 +107,12 @@ class TestServer(unittest.TestCase):
         Неверный формат поля "user"
         """
         test_response = create_response({
-            'action': 'presence',
-            'time': time(),
-            'type': 'status',
-            'user': 'User'
+            ACTION: PRESENCE,
+            TIME: time(),
+            TYPE: 'status',
+            USER: 'User'
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertEqual(test_response, self.error_response)
 
     def test_response_is_dict(self):
@@ -120,15 +120,15 @@ class TestServer(unittest.TestCase):
         Проверяет, является ли возвращенный объект словарем
         """
         test_response = create_response({
-            'action': 'presence',
-            'time': time(),
-            'type': 'status',
-            'user': {
+            ACTION: PRESENCE,
+            TIME: time(),
+            TYPE: 'status',
+            USER: {
                 'account_name': 'User',
                 'password': ''
             }
         })
-        test_response['time'] = 1
+        test_response[TIME] = 1
         self.assertIsInstance(test_response, dict)
 
 

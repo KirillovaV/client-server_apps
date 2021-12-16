@@ -15,23 +15,23 @@ from errors import NotDictError
 
 class TestUtils(unittest.TestCase):
     test_message = {
-        'action': 'presence',
-        'time': 1,
-        'type': 'status',
-        'user': {
+        ACTION: PRESENCE,
+        TIME: 1,
+        TYPE: 'status',
+        USER: {
             'account_name': 'User',
             'password': ''
         }
     }
     test_correct_response = {
-        'response': 200,
-        'time': 1,
-        'alert': 'Соединение прошло успешно'
+        RESPONSE: 200,
+        TIME: 1,
+        ALERT: 'Соединение прошло успешно'
     }
     test_error_response = {
-        'response': 400,
-        'time': 1,
-        'error': 'Ошибка соединения'
+        RESPONSE: 400,
+        TIME: 1,
+        ERROR: 'Ошибка соединения'
     }
 
     # инициализируем тестовые сокеты для клиента и для сервера

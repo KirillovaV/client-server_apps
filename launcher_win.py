@@ -1,6 +1,6 @@
 """
 Лаунчер
-Запускает сервер, 2 клиента на отправку сообщений и 2 клиента на приём сообщений
+Запускает сервер и 3 клиента
 """
 
 from subprocess import Popen, CREATE_NEW_CONSOLE
@@ -10,7 +10,7 @@ from subprocess import Popen, CREATE_NEW_CONSOLE
 processes = []
 
 while True:
-    command = input("Запустить сервер и клиентов (s) / Закрыть все окна и выйти (q) ")
+    command = input("Запустить сервер и клиенты (s) / Закрыть все окна и выйти (q) ")
 
     if command == 'q':
         for proc in processes:
@@ -22,10 +22,6 @@ while True:
         # Запустить сервер
         processes.append(Popen('python server.py', creationflags=CREATE_NEW_CONSOLE))
 
-        # Запустить 2 клиента на отправку сообщений
-        for i in range(2):
-            processes.append(Popen('python client.py -m send', creationflags=CREATE_NEW_CONSOLE))
-
-        # Запустить 2 клиента на приём сообщений
-        for i in range(2):
-            processes.append(Popen('python client.py -m read', creationflags=CREATE_NEW_CONSOLE))
+        # Запустить 3 клиента
+        for i in range(3):
+            processes.append(Popen(f'python client.py -n user{i}', creationflags=CREATE_NEW_CONSOLE))
